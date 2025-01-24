@@ -34,48 +34,45 @@ function onInit() {
 }
 
 function renderLocs(locs) {
+    
   const selectedLocId = getLocIdFromQueryParams()
 
-  var strHTML = locs
-    .map((loc) => {
-      const className = loc.id === selectedLocId ? 'active' : ''
+  var strHTML = locs.map(loc => {
+      const className = (loc.id === selectedLocId) ? 'active' : ''
+      var distanceHTML = ''
+      const userPos = mapService.getUserPos()
+      if (userPos) {
+          const distance = utilService.getDistance(userPos, loc.geo)
+          distanceHTML = `<span class="smaller">Distance: ${distance} KM.</span>`
+      }
       return `
-        <li class="loc ${className}" data-id="${loc.id}">
-            <h4>  
-                <span>${loc.name}</span>
-                <span title="${loc.rate} stars">${'★'.repeat(loc.rate)}</span>
-            </h4>
-            <p class="muted">
-                Created: ${utilService.elapsedTime(loc.createdAt)}
-                ${
-                  loc.createdAt !== loc.updatedAt
-                    ? ` | Updated: ${utilService.elapsedTime(loc.updatedAt)}`
-                    : ''
-                }
-            </p>
-            <div class="loc-btns">     
-               <button title="Delete" onclick="app.onRemoveLoc('${
-                 loc.id
-               }')">🗑️</button>
-               <button title="Edit" onclick="app.onUpdateLoc('${
-                 loc.id
-               }')">✏️</button>
-               <button title="Select" onclick="app.onSelectLoc('${
-                 loc.id
-               }')">🗺️</button>
-            </div>     
-        </li>`
-    })
-    .join('')
+      <li class="loc ${className}" data-id="${loc.id}">
+          <h4>  
+              <span>${loc.name}</span>
+              ${distanceHTML}
+              <span title="${loc.rate} stars">${'★'.repeat(loc.rate)}</span>
+          </h4>
+          <p class="muted">
+              Created: ${utilService.elapsedTime(loc.createdAt)}
+              ${(loc.createdAt !== loc.updatedAt) ?
+              ` | Updated: ${utilService.elapsedTime(loc.updatedAt)}`
+              : ''}
+          </p>
+          <div class="loc-btns">     
+             <button title="Delete" onclick="app.onRemoveLoc('${loc.id}')">🗑️</button>
+             <button title="Edit" onclick="app.onUpdateLoc('${loc.id}')">✏️</button>
+             <button title="Select" onclick="app.onSelectLoc('${loc.id}')">🗺️</button>
+          </div>     
+      </li>`}).join('')
 
   const elLocList = document.querySelector('.loc-list')
   elLocList.innerHTML = strHTML || 'No locs to show'
 
   renderLocStats()
-
   if (selectedLocId) {
-    const selectedLoc = locs.find((loc) => loc.id === selectedLocId)
-    displayLoc(selectedLoc)
+      const selectedLoc = locs.find(loc => loc.id === selectedLocId)
+      if (selectedLoc) displayLoc(selectedLoc)
+      else unDisplayLoc()
   }
   document.querySelector('.debug').innerText = JSON.stringify(locs, null, 2)
 }
@@ -143,18 +140,19 @@ function loadAndRenderLocs() {
 }
 
 function onPanToUserPos() {
-  mapService
-    .getUserPosition()
-    .then((latLng) => {
-      mapService.panTo({ ...latLng, zoom: 15 })
-      unDisplayLoc()
-      loadAndRenderLocs()
-      flashMsg(`You are at Latitude: ${latLng.lat} Longitude: ${latLng.lng}`)
-    })
-    .catch((err) => {
-      console.error('OOPs:', err)
-      flashMsg('Cannot get your position')
-    })
+  mapService.fetchUserPosition()
+      .then(latLng => {
+          unDisplayLoc()
+          mapService.panTo({ ...latLng, zoom: 15 })
+          // gUserPos = latLng
+          mapService.setUserPos(latLng)
+          loadAndRenderLocs()
+          flashMsg(`You are at Latitude: ${latLng.lat} Longitude: ${latLng.lng}`)
+      })
+      .catch(err => {
+          console.error('OOPs:', err)
+          flashMsg('Cannot get your position')
+      })
 }
 
 function onUpdateLoc(locId) {

@@ -21,6 +21,7 @@ const DB_KEY = 'locs'
 var gSortBy = { rate: -1 }
 var gFilterBy = { txt: '', minRate: 0 }
 var gPageIdx
+ 
 
 _createLocs()
 
