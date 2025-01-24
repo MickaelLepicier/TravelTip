@@ -195,10 +195,15 @@ function displayLoc(loc) {
   el.querySelector('.loc-name').innerText = loc.name
   el.querySelector('.loc-address').innerText = loc.geo.address
   el.querySelector('.loc-rate').innerHTML = '★'.repeat(loc.rate)
-  el.querySelector('[name=loc-copier]').value = window.location
+  const userPos = mapService.getUserPos()
+  if (userPos) {
+      const distance = utilService.getDistance(userPos, loc.geo)
+      el.querySelector('h3').innerText = `Distance: ${distance} KM.`
+  }
   el.classList.add('show')
-
   utilService.updateQueryParams({ locId: loc.id })
+  el.querySelector('[name=loc-copier]').value = window.location
+
 }
 
 function unDisplayLoc() {
