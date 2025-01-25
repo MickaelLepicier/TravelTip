@@ -11,7 +11,7 @@
 
 .loc-list li {
     padding-bottom: .2em;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid  black;
 }
 .loc-list li h4 {
     display: flex;
@@ -77,7 +77,7 @@
 
 .loc-stats .pie-label {
     display: inline-block;
-    background-color: black;
+    background-color: var(--color2);
     width: 1em;
     height: 1em;
     margin-inline-end: 0.3em;
